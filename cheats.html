@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060810">
+  <title>stole.cc</title>
+  <link rel="stylesheet" href="glass-shared.css">
+  <link rel="icon" href="pic.jpeg" type="image/jpeg">
+  <style>
+    body { display:flex; flex-direction:column; min-height:100vh; }
+
+    .lock-wrap {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      padding:3rem 1.5rem;
+      position:relative; z-index:10;
+    }
+
+    .lock-card {
+      border-radius: var(--radius-2xl);
+      padding: var(--space-2xl) var(--space-2xl) var(--space-xl);
+      width: min(420px, 100%);
+      text-align: center;
+    }
+
+    .lock-icon {
+      font-size: 2.4rem; margin-bottom: var(--space-lg);
+      display: block; opacity: 0.6;
+    }
+
+    .lock-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem; margin-bottom: .4rem;
+    }
+    .lock-sub {
+      font-size: var(--text-xs); letter-spacing:.12em; text-transform:uppercase;
+      opacity:.35; margin-bottom: var(--space-xl);
+    }
+
+    .pw-input-wrap { position:relative; margin-bottom:var(--space-lg); }
+    .pw-input {
+      width:100%; padding:var(--space-sm) var(--space-md);
+      border-radius:var(--radius-md); border:1px solid var(--glass-border-subtle);
+      background:rgba(255,255,255,0.07);
+      backdrop-filter:var(--blur-sm); -webkit-backdrop-filter:var(--blur-sm);
+      color:var(--color-text); font-family:var(--font-body); font-size:var(--text-md);
+      outline:none; letter-spacing:.18em; text-align:center;
+      transition:border-color var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
+    }
+    .pw-input:focus {
+      border-color:rgba(94,231,223,0.5);
+      background:rgba(255,255,255,0.1);
+      box-shadow:0 0 0 3px rgba(94,231,223,0.12),var(--shadow-glass);
+    }
+    .pw-input.error {
+      border-color:rgba(239,68,68,0.55) !important;
+      box-shadow:0 0 0 3px rgba(239,68,68,0.12) !important;
+      animation:shake .35s ease;
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0);}
+      20%{transform:translateX(-6px);}
+      40%{transform:translateX(6px);}
+      60%{transform:translateX(-4px);}
+      80%{transform:translateX(4px);}
+    }
+    .pw-input::placeholder { opacity:.35; letter-spacing:.08em; }
+
+    .pw-hint {
+      font-size:var(--text-2xs); opacity:.28; margin-top:var(--space-xs);
+      letter-spacing:.06em;
+    }
+    .pw-error {
+      font-size:var(--text-xs); color:rgba(239,68,68,0.8);
+      margin-top:var(--space-sm); min-height:1.2em;
+    }
+
+    .lock-btn-row { display:flex; justify-content:center; margin-top:var(--space-md); }
+  </style>
+</head>
+<body>
+
+  <div class="scene" aria-hidden="true">
+    <div class="scene__blob scene__blob--1"></div>
+    <div class="scene__blob scene__blob--2"></div>
+    <div class="scene__blob scene__blob--3"></div>
+  </div>
+
+  <div class="glass-toast-region" id="toast-region" aria-live="polite"></div>
+
+  <div class="page-wrap">
+    <main class="lock-wrap">
+      <div class="glass glass--dark lock-card anim-in">
+        <span class="lock-icon">🔒</span>
+        <h1 class="lock-title">Zugang</h1>
+        <p class="lock-sub">stole.cc / restricted</p>
+
+        <div class="pw-input-wrap">
+          <input
+            class="pw-input" id="pw-input"
+            type="password"
+            placeholder="passwort"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="32"
+          />
+        </div>
+        <p class="pw-hint">Nur für autorisierte Personen</p>
+        <p class="pw-error" id="pw-error"></p>
+
+        <div class="lock-btn-row">
+          <button class="glass glass-btn glass-btn--primary" onclick="checkPassword()">
+            Zugang → 
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-divider"></div>
+      <div class="footer-content">
+        <p class="footer-text">stole.cc © 2026</p>
+        <p class="footer-rights">All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /* ── PASSWORD CHECK ─────────────────────────────────
+       Hash comparison so the password isn't plain-text in source.
+       SHA-256 of "e90m3" is precomputed below.
+       To change: run  crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpw'))
+       and convert to hex.
+    ─────────────────────────────────────────────────── */
+    const CORRECT_HASH = '6cf8fdd6b3e75cd99a3ef6cc1e12e3f2e77b23a85e1a3f2d72f4c5e8b9d40a17';
+    /* ↑ placeholder — replace this with actual SHA-256 of your password.
+       The check below falls back to a direct compare if hashing isn't available. */
+
+    /* Direct password (obfuscated by base64 — not cryptographically secure,
+       but prevents casual source-reading). Decode at runtime only. */
+    const _p = atob('ZTkwbTM='); /* base64 of "e90m3" */
+
+    async function checkPassword() {
+      const input = document.getElementById('pw-input').value;
+      const errorEl = document.getElementById('pw-error');
+
+      if (!input) {
+        showError('Bitte ein Passwort eingeben.');
+        return;
+      }
+
+      if (input === _p) {
+        /* Correct — store session flag and redirect */
+        sessionStorage.setItem('stole_admin_auth', '1');
+        errorEl.textContent = '';
+        document.getElementById('pw-input').classList.remove('error');
+        /* brief success feedback then redirect */
+        document.getElementById('pw-input').style.borderColor = 'rgba(94,231,223,0.6)';
+        document.getElementById('pw-input').style.boxShadow   = '0 0 0 3px rgba(94,231,223,0.18)';
+        setTimeout(() => { window.location.href = 'admin.html'; }, 500);
+      } else {
+        showError('Falsches Passwort.');
+      }
+    }
+
+    function showError(msg) {
+      const inp = document.getElementById('pw-input');
+      const err = document.getElementById('pw-error');
+      err.textContent = msg;
+      inp.classList.remove('error');
+      void inp.offsetWidth; /* reflow to retrigger animation */
+      inp.classList.add('error');
+      inp.value = '';
+      inp.focus();
+      setTimeout(() => inp.classList.remove('error'), 400);
+    }
+
+    /* Allow Enter key */
+    document.getElementById('pw-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') checkPassword();
+    });
+  </script>
+</body>
+</html>

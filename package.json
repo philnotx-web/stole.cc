@@ -1,0 +1,16 @@
+{
+  "name": "stole-bot",
+  "version": "1.0.0",
+  "description": "stole.cc Discord bot — SOTD & MOTD management",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "@supabase/supabase-js": "^2.45.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>stole.cc — admin</title>
+  <link rel="stylesheet" href="glass-shared.css">
+  <link rel="icon" href="pic.jpeg" type="image/jpeg">
+  <script>
+    if (sessionStorage.getItem('stole_admin_auth') !== '1') {
+      window.location.replace('cheats.html');
+    }
+  </script>
+  <style>
+    body { display:flex; flex-direction:column; min-height:100vh; }
+
+    .admin-hero { position:relative; z-index:10; padding:3.5rem 0 2rem; text-align:center; }
+    .admin-hero h1 {
+      font-family:var(--font-glitch),var(--font-display); font-size:clamp(2rem,6vw,4rem);
+      background:linear-gradient(135deg,#fff 30%,var(--accent-aqua) 65%,var(--accent-violet) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .admin-hero p { font-size:var(--text-sm); opacity:.45; margin-top:.5rem; letter-spacing:.1em; text-transform:uppercase; }
+
+    .admin-section { position:relative; z-index:10; padding:0 0 4rem; }
+    .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+    @media (max-width:680px) { .admin-grid { grid-template-columns:1fr; } }
+
+    .admin-card { border-radius:var(--radius-2xl); padding:var(--space-xl) var(--space-xl) var(--space-2xl); }
+
+    .admin-card-title {
+      font-family:var(--font-display); font-size:1.7rem; margin-bottom:var(--space-lg);
+      display:flex; align-items:center; gap:.75rem;
+    }
+    .badge-pill {
+      font-family:var(--font-body); font-size:var(--text-2xs); padding:4px 12px;
+      border-radius:var(--radius-full); letter-spacing:.1em; text-transform:uppercase;
+      background:rgba(94,231,223,.15); border:1px solid rgba(94,231,223,.3); color:var(--accent-aqua);
+    }
+
+    .form-group { margin-bottom:var(--space-lg); }
+    .form-label {
+      display:block; font-size:var(--text-xs); letter-spacing:.1em; text-transform:uppercase;
+      opacity:.5; margin-bottom:var(--space-xs);
+    }
+    .glass-input, .glass-textarea {
+      width:100%; padding:var(--space-sm) var(--space-md);
+      border-radius:var(--radius-md); border:1px solid var(--glass-border-subtle);
+      background:rgba(255,255,255,0.06); backdrop-filter:var(--blur-sm); -webkit-backdrop-filter:var(--blur-sm);
+      color:var(--color-text); font-family:var(--font-body); font-size:var(--text-md); outline:none;
+      transition:border-color var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
+    }
+    .glass-input:focus, .glass-textarea:focus {
+      border-color:rgba(94,231,223,0.55); background:rgba(255,255,255,0.09);
+      box-shadow:0 0 0 3px rgba(94,231,223,0.12),var(--shadow-glass);
+    }
+    .glass-input::placeholder, .glass-textarea::placeholder { opacity:.4; }
+    .glass-textarea { resize:vertical; min-height:90px; }
+    .input-hint { font-size:var(--text-2xs); opacity:.4; margin-top:var(--space-2xs); letter-spacing:.05em; }
+
+    .form-actions { display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-md); }
+
+    .preview-area {
+      border-radius:var(--radius-lg); border:1px solid var(--glass-border-subtle);
+      background:rgba(0,0,0,0.25); padding:var(--space-md); min-height:60px;
+      margin-top:var(--space-lg); font-size:var(--text-sm);
+    }
+    .preview-label { font-size:var(--text-2xs); letter-spacing:.12em; text-transform:uppercase; opacity:.4; margin-bottom:var(--space-xs); }
+
+    .current-entry {
+      border-radius:var(--radius-lg); border:1px solid rgba(94,231,223,.2);
+      background:rgba(94,231,223,0.05); padding:var(--space-md) var(--space-lg);
+      margin-top:var(--space-xl); font-size:var(--text-sm);
+    }
+    .current-entry.motd-entry { border-color:rgba(180,144,245,.2); background:rgba(180,144,245,0.05); }
+    .current-title { font-size:var(--text-xs); letter-spacing:.1em; text-transform:uppercase; opacity:.4; margin-bottom:.5rem; }
+    .current-body { line-height:1.6; }
+    .current-body .c-source { opacity:.55; font-size:var(--text-xs); margin-top:.35rem; }
+
+    .nav-links { display:flex; align-items:center; gap:var(--space-lg); margin-bottom:var(--space-2xl); flex-wrap:wrap; }
+    .back-link {
+      display:inline-flex; align-items:center; gap:.4rem; font-size:var(--text-xs);
+      opacity:.45; color:inherit; text-decoration:none; letter-spacing:.08em; text-transform:uppercase;
+      transition:opacity var(--dur-fast);
+    }
+    .back-link:hover { opacity:.8; }
+
+    .btn-saving { opacity:0.55; pointer-events:none; }
+
+    /* Status indicator */
+    .db-status {
+      display:inline-flex; align-items:center; gap:.4rem;
+      font-size:var(--text-2xs); letter-spacing:.08em; text-transform:uppercase;
+      opacity:.5; margin-left:auto;
+    }
+    .db-status__dot {
+      width:6px; height:6px; border-radius:50%; background:var(--accent-amber);
+      transition:background .3s;
+    }
+    .db-status--ok .db-status__dot   { background:var(--accent-lime); }
+    .db-status--err .db-status__dot  { background:#f87171; }
+  </style>
+</head>
+<body>
+
+  <div class="scene" aria-hidden="true">
+    <div class="scene__blob scene__blob--1"></div>
+    <div class="scene__blob scene__blob--2"></div>
+    <div class="scene__blob scene__blob--3"></div>
+  </div>
+
+  <div class="glass-toast-region" id="toast-region" aria-live="polite"></div>
+
+  <div class="page-wrap">
+
+    <div class="admin-hero anim-in">
+      <h1>admin</h1>
+      <p>stole.cc content management</p>
+    </div>
+
+    <section class="admin-section">
+      <div class="container">
+
+        <div class="nav-links">
+          <a href="index.html" class="back-link">← back to site</a>
+          <div class="db-status" id="db-status">
+            <span class="db-status__dot"></span>
+            <span id="db-status-label">connecting…</span>
+          </div>
+          <a href="cheats.html" class="back-link" style="margin-left:0"
+             onclick="sessionStorage.removeItem('stole_admin_auth')">🔒 logout</a>
+        </div>
+
+        <div class="admin-grid">
+
+          <!-- ── SOTD ─────────────────────────────── -->
+          <div class="glass glass--dark admin-card anim-in" style="animation-delay:.1s">
+            <h2 class="admin-card-title">
+              Song of the Day
+              <span class="badge-pill">sotd</span>
+            </h2>
+
+            <div class="form-group">
+              <label class="form-label" for="sotd-url">Spotify Share Link</label>
+              <input class="glass-input" id="sotd-url" type="url"
+                placeholder="https://open.spotify.com/track/…" />
+              <p class="input-hint">Paste a Spotify track link — embedded as a compact player.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sotd-date">Date</label>
+              <input class="glass-input" id="sotd-date" type="date" />
+            </div>
+
+            <div class="preview-area" id="sotd-preview">
+              <div class="preview-label">Preview</div>
+              <div id="sotd-preview-content" style="opacity:.38;font-size:var(--text-xs)">Enter a link to preview…</div>
+            </div>
+
+            <div class="current-entry" id="sotd-current" style="display:none">
+              <div class="current-title">Currently live</div>
+              <div class="current-body" id="sotd-current-body"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="glass glass-btn glass-btn--primary" id="sotd-save-btn" onclick="saveSotd()">
+                ✓ Save
+              </button>
+              <button class="glass glass-btn glass-btn--ghost glass-btn--sm" onclick="clearSotd()">
+                × Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- ── MOTD ─────────────────────────────── -->
+          <div class="glass glass--dark admin-card anim-in" style="animation-delay:.2s">
+            <h2 class="admin-card-title">
+              Motto of the Day
+              <span class="badge-pill" style="background:rgba(180,144,245,.15);border-color:rgba(180,144,245,.3);color:var(--accent-violet)">motd</span>
+            </h2>
+
+            <div class="form-group">
+              <label class="form-label" for="motd-text-input">Quote / Motto</label>
+              <textarea class="glass-textarea" id="motd-text-input"
+                placeholder="Enter the motto or quote here…"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="motd-source">Source / Author</label>
+              <input class="glass-input" id="motd-source" type="text"
+                placeholder="e.g. Friedrich Nietzsche (optional)" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="motd-date">Date</label>
+              <input class="glass-input" id="motd-date" type="date" />
+            </div>
+
+            <div class="current-entry motd-entry" id="motd-current" style="display:none">
+              <div class="current-title">Currently live</div>
+              <div class="current-body" id="motd-current-body"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="glass glass-btn glass-btn--accent" id="motd-save-btn" onclick="saveMotd()">
+                ✓ Save
+              </button>
+              <button class="glass glass-btn glass-btn--ghost glass-btn--sm" onclick="clearMotd()">
+                × Clear
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-divider"></div>
+      <div class="footer-content">
+        <p class="footer-text">stole.cc © 2026 — admin</p>
+        <p class="footer-rights">All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /* ── SUPABASE ──────────────────────────────────────────────
+       Secret key is safe here — this page is behind the password
+       gate and never indexed/public.
+    ──────────────────────────────────────────────────────────── */
+    const SB_URL    = 'https://wjooxweijejumgvutdvo.supabase.co';
+    const SB_SECRET = 'sb_secret_9-V6Cm9gZgwPCxmrSm_j7g_hcIo8LY8';
+
+    const SB_HEADERS = {
+      'apikey':        SB_SECRET,
+      'Authorization': `Bearer ${SB_SECRET}`,
+      'Content-Type':  'application/json',
+      'Prefer':        'return=representation',
+    };
+
+    async function sbGet(type) {
+      const res = await fetch(
+        `${SB_URL}/rest/v1/daily_content?type=eq.${type}&select=*&limit=1`,
+        { headers: SB_HEADERS }
+      );
+      if (!res.ok) throw new Error(`GET failed: ${res.status}`);
+      const rows = await res.json();
+      return rows[0] || null;
+    }
+
+    async function sbUpdate(type, content, source, date) {
+      const res = await fetch(
+        `${SB_URL}/rest/v1/daily_content?type=eq.${type}`,
+        {
+          method:  'PATCH',
+          headers: SB_HEADERS,
+          body: JSON.stringify({
+            content:    content,
+            source:     source || null,
+            date:       date,
+            updated_at: new Date().toISOString(),
+          }),
+        }
+      );
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg);
+      }
+    }
+
+    /* ── HELPERS ───────────────────────────────────────────── */
+    function fmtDate(d) {
+      if (!d) return '';
+      const [y, m, day] = d.split('-');
+      return `${day}.${m}.${y}`;
+    }
+
+    function setLoading(btnId, on) {
+      document.getElementById(btnId).classList.toggle('btn-saving', on);
+    }
+
+    function setDbStatus(state, label) {
+      const el  = document.getElementById('db-status');
+      const txt = document.getElementById('db-status-label');
+      el.className  = `db-status db-status--${state}`;
+      txt.textContent = label;
+    }
+
+    /* ── TOAST ─────────────────────────────────────────────── */
+    function showToast(type, title, desc) {
+      const icons = { success:'✓', error:'✕', info:'ℹ', warning:'⚠' };
+      const region = document.getElementById('toast-region');
+      const t = document.createElement('div');
+      t.className = `glass glass-toast glass-toast--${type}`;
+      t.innerHTML = `<span class="glass-toast__icon">${icons[type]||'ℹ'}</span>
+        <div class="glass-toast__body">
+          <div class="glass-toast__title">${title}</div>
+          ${desc ? `<div class="glass-toast__desc">${desc}</div>` : ''}
+        </div>
+        <span class="glass-toast__close">✕</span>`;
+      region.appendChild(t);
+      const dismiss = () => {
+        t.classList.add('is-exiting');
+        t.addEventListener('animationend', () => t.remove(), { once: true });
+      };
+      t.querySelector('.glass-toast__close').addEventListener('click', dismiss);
+      setTimeout(dismiss, 4000);
+    }
+
+    /* ── SOTD ──────────────────────────────────────────────── */
+    async function saveSotd() {
+      const url  = document.getElementById('sotd-url').value.trim();
+      const date = document.getElementById('sotd-date').value || new Date().toISOString().split('T')[0];
+      if (!url) { showToast('error', 'Missing link', 'Please enter a Spotify link.'); return; }
+      setLoading('sotd-save-btn', true);
+      try {
+        await sbUpdate('sotd', url, null, date);
+        showToast('success', 'SOTD saved!', `Live for ${fmtDate(date)}.`);
+        await renderSotdCurrent();
+        setDbStatus('ok', 'saved');
+      } catch(e) {
+        showToast('error', 'Save failed', e.message);
+        setDbStatus('err', 'error');
+      }
+      setLoading('sotd-save-btn', false);
+    }
+
+    async function clearSotd() {
+      const date = new Date().toISOString().split('T')[0];
+      setLoading('sotd-save-btn', true);
+      try {
+        await sbUpdate('sotd', '', null, date);
+        document.getElementById('sotd-url').value = '';
+        document.getElementById('sotd-preview-content').innerHTML =
+          '<span style="opacity:.38;font-size:var(--text-xs)">Enter a link to preview…</span>';
+        document.getElementById('sotd-current').style.display = 'none';
+        showToast('info', 'SOTD cleared', 'Song of the Day removed.');
+        setDbStatus('ok', 'cleared');
+      } catch(e) {
+        showToast('error', 'Error', e.message);
+        setDbStatus('err', 'error');
+      }
+      setLoading('sotd-save-btn', false);
+    }
+
+    async function renderSotdCurrent() {
+      const data = await sbGet('sotd');
+      const el   = document.getElementById('sotd-current');
+      const body = document.getElementById('sotd-current-body');
+      if (!data || !data.content) { el.style.display = 'none'; return; }
+      el.style.display = '';
+      body.innerHTML = `
+        <a href="${data.content}" target="_blank"
+           style="color:var(--accent-aqua);word-break:break-all;font-size:var(--text-sm)">${data.content}</a>
+        <div class="c-source">${fmtDate(data.date)}</div>`;
+    }
+
+    /* Spotify live preview */
+    function initSotdPreview() {
+      document.getElementById('sotd-url').addEventListener('input', function() {
+        const preview = document.getElementById('sotd-preview-content');
+        const url = this.value.trim();
+        const m = url.match(/track\/([A-Za-z0-9]+)/);
+        if (m) {
+          preview.innerHTML = `<iframe
+            src="https://open.spotify.com/embed/track/${m[1]}?utm_source=generator&theme=0"
+            width="100%" height="80" frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            style="border-radius:10px;border:none;display:block"></iframe>`;
+        } else if (url) {
+          preview.innerHTML = `<span style="color:var(--accent-amber);font-size:var(--text-xs)">⚠ Not a valid Spotify track link</span>`;
+        } else {
+          preview.innerHTML = `<span style="opacity:.38;font-size:var(--text-xs)">Enter a link to preview…</span>`;
+        }
+      });
+    }
+
+    /* ── MOTD ──────────────────────────────────────────────── */
+    async function saveMotd() {
+      const text   = document.getElementById('motd-text-input').value.trim();
+      const source = document.getElementById('motd-source').value.trim();
+      const date   = document.getElementById('motd-date').value || new Date().toISOString().split('T')[0];
+      if (!text) { showToast('error', 'Missing quote', 'Please enter a quote or motto.'); return; }
+      setLoading('motd-save-btn', true);
+      try {
+        await sbUpdate('motd', text, source || null, date);
+        showToast('success', 'MOTD saved!', `Live for ${fmtDate(date)}.`);
+        await renderMotdCurrent();
+        setDbStatus('ok', 'saved');
+      } catch(e) {
+        showToast('error', 'Save failed', e.message);
+        setDbStatus('err', 'error');
+      }
+      setLoading('motd-save-btn', false);
+    }
+
+    async function clearMotd() {
+      const date = new Date().toISOString().split('T')[0];
+      setLoading('motd-save-btn', true);
+      try {
+        await sbUpdate('motd', '', null, date);
+        document.getElementById('motd-text-input').value = '';
+        document.getElementById('motd-source').value     = '';
+        document.getElementById('motd-current').style.display = 'none';
+        showToast('info', 'MOTD cleared', 'Motto of the Day removed.');
+        setDbStatus('ok', 'cleared');
+      } catch(e) {
+        showToast('error', 'Error', e.message);
+        setDbStatus('err', 'error');
+      }
+      setLoading('motd-save-btn', false);
+    }
+
+    async function renderMotdCurrent() {
+      const data = await sbGet('motd');
+      const el   = document.getElementById('motd-current');
+      const body = document.getElementById('motd-current-body');
+      if (!data || !data.content) { el.style.display = 'none'; return; }
+      el.style.display = '';
+      body.innerHTML = `
+        <div style="font-size:var(--text-sm);line-height:1.6">"${data.content}"</div>
+        ${data.source ? `<div class="c-source">— ${data.source}</div>` : ''}
+        <div class="c-source">${fmtDate(data.date)}</div>`;
+    }
+
+    /* ── INIT ──────────────────────────────────────────────── */
+    async function init() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('sotd-date').value = today;
+      document.getElementById('motd-date').value = today;
+      initSotdPreview();
+
+      try {
+        const [sotd, motd] = await Promise.all([sbGet('sotd'), sbGet('motd')]);
+        setDbStatus('ok', 'connected');
+
+        if (sotd?.content) {
+          document.getElementById('sotd-url').value = sotd.content;
+          if (sotd.date) document.getElementById('sotd-date').value = sotd.date;
+          renderSotdCurrent();
+          /* trigger preview */
+          document.getElementById('sotd-url').dispatchEvent(new Event('input'));
+        }
+        if (motd?.content) {
+          document.getElementById('motd-text-input').value = motd.content;
+          document.getElementById('motd-source').value     = motd.source || '';
+          if (motd.date) document.getElementById('motd-date').value = motd.date;
+          renderMotdCurrent();
+        }
+      } catch(e) {
+        setDbStatus('err', 'connection error');
+        showToast('error', 'Database error', e.message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

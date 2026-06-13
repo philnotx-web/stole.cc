@@ -1,0 +1,371 @@
+/* ==========================================================================
+   STOLE.CC — LIQUID GLASS DESIGN SYSTEM
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Italiana&family=DM+Sans:wght@300;400;500;600&family=Kapakana&family=Lobster+Two:ital,wght@0,400;0,700;1,400&family=Fredoka:wght@400;600&family=DM+Serif+Display&family=Orbitron:wght@400;700&family=Barlow+Semi+Condensed:wght@400;600&family=Instrument+Sans:wght@400;600&family=DM+Mono:wght@400;500&family=Shadows+Into+Light&family=Yellowtail&family=News+Cycle:wght@400;700&family=Viga&family=Creepster&family=Great+Vibes&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. CUSTOM PROPERTIES
+   -------------------------------------------------------------------------- */
+:root {
+  --glass-white:        rgba(255,255,255,0.10);
+  --glass-white-md:     rgba(255,255,255,0.18);
+  --glass-white-lg:     rgba(255,255,255,0.28);
+  --glass-dark:         rgba(0,0,0,0.22);
+  --glass-dark-md:      rgba(0,0,0,0.35);
+
+  --glass-border:        rgba(255,255,255,0.22);
+  --glass-border-subtle: rgba(255,255,255,0.10);
+  --glass-border-bright: rgba(255,255,255,0.45);
+
+  --blur-sm: blur(8px);
+  --blur-md: blur(20px);
+  --blur-lg: blur(36px);
+  --blur-xl: blur(64px);
+
+  --shadow-glass:  0 8px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.28);
+  --shadow-float:  0 20px 60px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.22);
+  --shadow-glow:   0 0 40px rgba(94,231,223,0.35);
+
+  --reflection-top:   linear-gradient(135deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0) 52%);
+  --reflection-inner: inset 0 1px 1px rgba(255,255,255,0.42), inset 0 -1px 1px rgba(0,0,0,0.12);
+
+  --accent-aqua:   #5ee7df;
+  --accent-violet: #b490f5;
+  --accent-rose:   #f7a8c4;
+  --accent-amber:  #ffd27f;
+  --accent-lime:   #a8f08a;
+
+  --color-bg:           #060810;
+  --color-text:         #ffffff;
+  --color-text-muted:   rgba(255,255,255,0.55);
+  --color-text-subtle:  rgba(255,255,255,0.32);
+
+  --space-2xs: 4px;   --space-xs: 8px;   --space-sm: 12px;
+  --space-md:  16px;  --space-lg: 24px;  --space-xl: 32px;
+  --space-2xl: 48px;  --space-3xl: 64px; --space-4xl: 96px;
+
+  --text-2xs: 0.68rem; --text-xs: 0.75rem; --text-sm: 0.82rem;
+  --text-md:  0.9rem;  --text-base: 1rem;  --text-lg: 1.125rem;
+  --text-xl:  1.3rem;  --text-2xl: 1.6rem; --text-3xl: 2rem;
+
+  --radius-xs: 6px;  --radius-sm: 10px; --radius-md: 14px;
+  --radius-lg: 20px; --radius-xl: 24px; --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  --z-base: 1; --z-raised: 10; --z-overlay: 100;
+  --z-modal: 500; --z-toast: 800; --z-tooltip: 900;
+
+  --ease-glass:  cubic-bezier(0.22, 0.68, 0, 1.2);
+  --ease-liquid: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --dur-fast: 180ms; --dur-mid: 360ms; --dur-slow: 600ms;
+
+  --font-display: 'Italiana', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-glitch:  'Kapakana', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET & BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  /* Prevent any element — blobs, wide fonts, etc — from causing horizontal scroll */
+  overflow-x: hidden;
+}
+body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   3. ANIMATED BACKGROUND SCENE
+   -------------------------------------------------------------------------- */
+.scene {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+}
+.scene__blob {
+  position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.50;
+  animation: blob-drift var(--dur, 18s) ease-in-out infinite alternate;
+}
+.scene__blob--1 { width:650px; height:650px; background:radial-gradient(circle,#5ee7df,#3b82f6); top:-180px; left:-130px; --dur:22s; }
+.scene__blob--2 { width:550px; height:550px; background:radial-gradient(circle,#b490f5,#ec4899); bottom:-180px; right:-80px; --dur:17s; animation-delay:-8s; }
+.scene__blob--3 { width:380px; height:380px; background:radial-gradient(circle,#ffd27f,#f7a8c4); top:38%; left:48%; --dur:25s; animation-delay:-13s; }
+.scene__blob--4 { width:300px; height:300px; background:radial-gradient(circle,#a8f08a,#5ee7df); top:15%; right:15%; --dur:30s; animation-delay:-5s; }
+@keyframes blob-drift {
+  0%{transform:translate(0,0)scale(1);}33%{transform:translate(55px,-35px)scale(1.08);}
+  66%{transform:translate(-35px,55px)scale(0.94);}100%{transform:translate(28px,28px)scale(1.04);}
+}
+
+/* --------------------------------------------------------------------------
+   4. GLASS UTILITY
+   -------------------------------------------------------------------------- */
+.glass {
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  background: var(--glass-white);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
+  position: relative; overflow: hidden;
+}
+.glass::before {
+  content:""; position:absolute; inset:0;
+  background:var(--reflection-top); pointer-events:none; border-radius:inherit; z-index:1;
+}
+.glass--dark    { background:var(--glass-dark-md); border-color:rgba(255,255,255,0.09); }
+.glass--frosted { backdrop-filter:var(--blur-lg); -webkit-backdrop-filter:var(--blur-lg); background:rgba(255,255,255,0.07); }
+
+/* --------------------------------------------------------------------------
+   5. FOCUS
+   -------------------------------------------------------------------------- */
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--accent-aqua); outline-offset: 3px; border-radius: var(--radius-xs); }
+
+/* --------------------------------------------------------------------------
+   6. BUTTONS
+   -------------------------------------------------------------------------- */
+.glass-btn {
+  display:inline-flex; align-items:center; gap:var(--space-xs);
+  padding:var(--space-sm) var(--space-lg);
+  border-radius:var(--radius-full); border:none; cursor:pointer;
+  font-family:var(--font-body); font-size:var(--text-sm); font-weight:500;
+  letter-spacing:0.04em; color:var(--color-text); text-decoration:none;
+  transition:transform var(--dur-fast) var(--ease-liquid), box-shadow var(--dur-fast), background var(--dur-fast);
+  position:relative;
+}
+.glass-btn::before { content:""; position:absolute; inset:0; border-radius:inherit; background:var(--reflection-top); pointer-events:none; z-index:1; }
+.glass-btn:active { transform:scale(0.96); }
+
+.glass-btn--primary {
+  background:linear-gradient(135deg,rgba(94,231,223,0.48) 0%,rgba(59,130,246,0.48) 100%);
+  border:1px solid rgba(94,231,223,0.42);
+  box-shadow:0 4px 24px rgba(94,231,223,0.28),var(--reflection-inner);
+}
+.glass-btn--primary:hover {
+  background:linear-gradient(135deg,rgba(94,231,223,0.68) 0%,rgba(59,130,246,0.68) 100%);
+  box-shadow:0 8px 36px rgba(94,231,223,0.48),var(--reflection-inner);
+  transform:translateY(-2px);
+}
+.glass-btn--ghost { background:var(--glass-white); border:1px solid var(--glass-border); box-shadow:var(--shadow-glass); }
+.glass-btn--ghost:hover { background:var(--glass-white-md); transform:translateY(-2px); }
+
+.glass-btn--accent {
+  background:linear-gradient(135deg,rgba(180,144,245,0.48) 0%,rgba(247,168,196,0.48) 100%);
+  border:1px solid rgba(180,144,245,0.42);
+  box-shadow:0 4px 24px rgba(180,144,245,0.28),var(--reflection-inner);
+}
+.glass-btn--accent:hover { transform:translateY(-2px); box-shadow:0 8px 40px rgba(180,144,245,0.48),var(--reflection-inner); }
+
+/* pink / active-pink for font-rotate toggle */
+.glass-btn--pink {
+  background:linear-gradient(135deg,rgba(247,168,196,0.55) 0%,rgba(236,72,153,0.45) 100%);
+  border:1px solid rgba(247,168,196,0.5);
+  box-shadow:0 4px 20px rgba(247,168,196,0.35),var(--reflection-inner);
+}
+.glass-btn--pink:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(247,168,196,0.55),var(--reflection-inner); }
+.glass-btn--pink-active {
+  background:linear-gradient(135deg,rgba(255,182,220,0.75) 0%,rgba(255,100,180,0.65) 100%);
+  border:1px solid rgba(255,182,220,0.7);
+  box-shadow:0 0 24px rgba(255,150,210,0.6), 0 4px 20px rgba(247,168,196,0.4),var(--reflection-inner);
+}
+.glass-btn--pink-active:hover { transform:translateY(-2px); }
+
+.glass-btn--sm { padding:var(--space-2xs) var(--space-md); font-size:var(--text-xs); }
+.glass-btn--lg { padding:var(--space-md) var(--space-xl); font-size:var(--text-base); }
+
+/* --------------------------------------------------------------------------
+   7. BADGES
+   -------------------------------------------------------------------------- */
+.glass-badge {
+  display:inline-flex; align-items:center; gap:6px; padding:5px 14px;
+  border-radius:var(--radius-full); font-size:var(--text-2xs); font-weight:500;
+  letter-spacing:0.08em; text-transform:uppercase;
+}
+.glass-badge--aqua   { background:rgba(94,231,223,0.18);  border:1px solid rgba(94,231,223,0.38);  color:var(--accent-aqua);   }
+.glass-badge--violet { background:rgba(180,144,245,0.18); border:1px solid rgba(180,144,245,0.38); color:var(--accent-violet); }
+.glass-badge--rose   { background:rgba(247,168,196,0.18); border:1px solid rgba(247,168,196,0.38); color:var(--accent-rose);   }
+.glass-badge--amber  { background:rgba(255,210,127,0.18); border:1px solid rgba(255,210,127,0.38); color:var(--accent-amber);  }
+.glass-badge__dot    { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse-dot 2s ease infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);} }
+
+/* --------------------------------------------------------------------------
+   8. TOAST / SNACKBAR
+   -------------------------------------------------------------------------- */
+.glass-toast-region {
+  position:fixed; bottom:var(--space-lg); right:var(--space-lg); z-index:var(--z-toast);
+  display:flex; flex-direction:column; gap:var(--space-xs); pointer-events:none; width:min(360px,90vw);
+}
+.glass-toast {
+  border-radius:var(--radius-lg); padding:var(--space-md) var(--space-lg);
+  display:flex; align-items:center; gap:var(--space-sm);
+  pointer-events:all; cursor:pointer; animation:toast-in var(--dur-mid) var(--ease-liquid) both;
+}
+.glass-toast.is-exiting { animation:toast-out var(--dur-mid) var(--ease-glass) forwards; }
+.glass-toast__icon  { font-size:1.2rem; flex-shrink:0; }
+.glass-toast__body  { flex:1; }
+.glass-toast__title { font-size:var(--text-sm); font-weight:500; }
+.glass-toast__desc  { font-size:var(--text-xs); opacity:0.65; margin-top:2px; }
+.glass-toast__close { opacity:0.5; font-size:0.75rem; flex-shrink:0; }
+.glass-toast:hover .glass-toast__close { opacity:1; }
+.glass-toast--success { border-color:rgba(74,222,128,0.4) !important; }
+.glass-toast--error   { border-color:rgba(239,68,68,0.4)  !important; }
+.glass-toast--info    { border-color:rgba(94,231,223,0.4)  !important; }
+@keyframes toast-in  { from{opacity:0;transform:translateX(60px) scale(0.95);}to{opacity:1;transform:translateX(0) scale(1);} }
+@keyframes toast-out { from{opacity:1;transform:translateX(0) scale(1);}to{opacity:0;transform:translateX(60px) scale(0.9);padding:0;margin:0;} }
+
+/* --------------------------------------------------------------------------
+   9. SHARED LAYOUT
+   -------------------------------------------------------------------------- */
+.page-wrap { position:relative; z-index:10; display:flex; flex-direction:column; min-height:100vh; }
+.container  { width:min(1000px, 92vw); margin-inline:auto; }
+
+/* --------------------------------------------------------------------------
+   10. SECTION DIVIDER  — 1:1 from Liquid Glass UI Kit reference
+       white fading line, not fully drawn through
+   -------------------------------------------------------------------------- */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255,255,255,0.08) 6%,
+    rgba(255,255,255,0.55) 30%,
+    rgba(255,255,255,0.55) 70%,
+    rgba(255,255,255,0.08) 94%,
+    transparent 100%
+  );
+  margin: 0;
+  border: none;
+}
+
+/* --------------------------------------------------------------------------
+   11. FOOTER
+   -------------------------------------------------------------------------- */
+footer.site-footer {
+  background:transparent; padding:2.8rem 2rem 2rem;
+  text-align:center; position:relative; z-index:10; margin-top:auto;
+}
+.footer-divider {
+  width:100%; height:1px; margin-bottom:2.5rem;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255,255,255,0.08) 6%,
+    rgba(255,255,255,0.55) 30%,
+    rgba(255,255,255,0.55) 70%,
+    rgba(255,255,255,0.08) 94%,
+    transparent 100%
+  );
+}
+.footer-content { display:flex; flex-direction:column; align-items:center; gap:1.5rem; }
+.footer-socials { display:flex; gap:1.5rem; justify-content:center; align-items:center; }
+
+.social-link {
+  display:flex; align-items:center; justify-content:center;
+  width:46px; height:46px; border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm); color:#ffffff;
+  transition:all 0.3s var(--ease-glass); position:relative; overflow:hidden;
+  backdrop-filter:var(--blur-sm); -webkit-backdrop-filter:var(--blur-sm);
+  background:var(--glass-white);
+}
+.social-link::before {
+  content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+  background:linear-gradient(135deg,rgba(94,231,223,0.4),rgba(180,144,245,0.4));
+  transition:left 0.3s ease; z-index:0;
+}
+.social-link:hover::before { left:0; }
+.social-link:hover { transform:scale(1.1) translateY(-2px); box-shadow:0 8px 24px rgba(94,231,223,0.3); border-color:rgba(94,231,223,0.5); }
+
+/* SVG icons — white fill via currentColor */
+.social-icon-svg {
+  width:20px; height:20px; fill:white; position:relative; z-index:1;
+  transition:fill 0.2s;
+}
+.social-link:hover .social-icon-svg { fill:white; }
+
+/* IMG icons — invert to white, invert back on hover-overlay */
+.social-icon-img {
+  width:20px; height:20px; object-fit:contain;
+  filter:brightness(0) invert(1);
+  position:relative; z-index:1;
+  transition:filter 0.2s;
+}
+
+.footer-text {
+  font-family:var(--font-body); font-size:0.78rem; letter-spacing:0.18em; text-transform:uppercase;
+  background:linear-gradient(90deg,var(--accent-aqua),var(--accent-violet),var(--accent-rose));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  opacity:0.75;
+}
+.footer-rights {
+  font-family:var(--font-body); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase;
+  opacity:0.28; color:#fff; margin-top:-0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   12. GLITCH TITLE ANIMATION
+   -------------------------------------------------------------------------- */
+.glitch-title { font-family:var(--font-glitch),var(--font-display); position:relative; }
+.glitch-title .flicker { display:inline-block; animation:flicker 3s infinite, glitch-move 2.5s infinite; }
+@keyframes flicker {
+  /* Never go below opacity 0.6 so it stays visible; outline trick on near-invisible frames */
+  0%,100%{ opacity:1; text-shadow:none; -webkit-text-stroke:0px transparent; }
+  18%    { opacity:0.82; text-shadow:2px 0 var(--accent-rose),-2px 0 var(--accent-aqua); }
+  22%    { opacity:1; text-shadow:none; }
+  25%    { opacity:0.72; text-shadow:2px 0 var(--accent-rose),-2px 0 var(--accent-aqua); -webkit-text-stroke:1px rgba(255,255,255,0.25); }
+  28%    { opacity:1; text-shadow:none; -webkit-text-stroke:0px transparent; }
+  45%    { opacity:0.78; text-shadow:3px 0 var(--accent-violet),-3px 0 var(--accent-aqua); }
+  50%    { opacity:1; text-shadow:none; }
+}
+@keyframes glitch-move {
+  0%{transform:translate(0);}20%{transform:translate(-2px,2px);}
+  40%{transform:translate(-2px,-2px);}60%{transform:translate(2px,2px);}
+  80%{transform:translate(2px,-2px);}100%{transform:translate(0);}
+}
+
+/* --------------------------------------------------------------------------
+   13. COUNTDOWN (time / j pages)
+   -------------------------------------------------------------------------- */
+.countdown { display:flex; flex-wrap:wrap; justify-content:center; gap:1rem; }
+.flip-unit  { display:flex; flex-direction:column; align-items:center; }
+.flip-card  {
+  width:110px; height:90px; border-radius:var(--radius-lg);
+  backdrop-filter:var(--blur-md); -webkit-backdrop-filter:var(--blur-md);
+  background:var(--glass-dark-md); border:1px solid var(--glass-border);
+  box-shadow:var(--shadow-glass); display:flex; align-items:center; justify-content:center;
+  font-size:2.2rem; font-weight:600; font-variant-numeric:tabular-nums;
+  letter-spacing:-0.02em; position:relative; overflow:hidden;
+}
+.flip-card::before { content:''; position:absolute; inset:0; background:var(--reflection-top); pointer-events:none; z-index:1; }
+.flip-label { margin-top:.6rem; font-size:var(--text-xs); letter-spacing:.14em; text-transform:uppercase; opacity:.6; }
+@media (max-width:480px) { .flip-card{width:72px;height:64px;font-size:1.5rem;} }
+
+/* --------------------------------------------------------------------------
+   14. ANIMATIONS
+   -------------------------------------------------------------------------- */
+@keyframes cascade-in { 0%{opacity:0;transform:translateY(20px) scale(0.97);filter:blur(6px);} 100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);} }
+.anim-in { animation:cascade-in var(--dur-slow) var(--ease-glass) both; }
+
+/* --------------------------------------------------------------------------
+   15. RESPONSIVE FOOTER
+   -------------------------------------------------------------------------- */
+@media (max-width:480px) { .footer-socials{gap:1rem;} .social-link{width:40px;height:40px;} }
+
+/* --------------------------------------------------------------------------
+   16. FALLBACKS
+   -------------------------------------------------------------------------- */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass       { background:rgba(18,22,40,0.90) !important; }
+  .glass--dark { background:rgba(0,0,0,0.75)    !important; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+}
